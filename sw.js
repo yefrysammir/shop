@@ -1,11 +1,12 @@
-const CACHE_NAME = "tienda-cache-v1";
+const CACHE_NAME = "mi-tienda-cache-v1";
 const urlsToCache = [
   "/",
   "/index.html",
   "/style.css",
   "/app.js",
   "/items.json",
-  "/discounts.json"
+  "/discounts.json",
+  "/settings.json"
 ];
 
 self.addEventListener("install", e => {
@@ -16,6 +17,6 @@ self.addEventListener("install", e => {
 
 self.addEventListener("fetch", e => {
   e.respondWith(
-    caches.match(e.request).then(resp => resp || fetch(e.request))
+    caches.match(e.request).then(response => response || fetch(e.request))
   );
 });
