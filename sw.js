@@ -1,4 +1,4 @@
-const CACHE = 'mi-tienda-v2';
+const CACHE = 'salem-store-v2';
 const ASSETS = [
   '/',
   'index.html',
