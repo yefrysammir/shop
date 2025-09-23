@@ -1,12 +1,9 @@
-/*
- app.js - Mejorado según especificaciones:
- - Inter font
- - Sidebar con X y submenu dinámico
- - Overlay con blur; cuando sidebar activo solo el sidebar se mueve
- - Select de ordenar estilizado y arriba del grid (actualiza en vivo)
- - Modal fullscreen: imagen cubre todo (safe-area), info abajo, lock scroll
- - Discounts from discounts.json; discount % color matches badge
- - Search live with debounce; promos via keywords
+/* app.js - versión corregida y consistente
+   - carga items, discounts y settings desde JSON
+   - dinámico: categorías por SKU, submenú, búsqueda, ordenar en vivo
+   - sidebar con X, overlay con blur y bloqueo fondo
+   - modal fullscreen: imagen cubre toda la pantalla, info abajo, bloquea scroll
+   - precios con descuento destacados y % igual color badge
 */
 
 const ITEMS_URL = 'items.json';
@@ -43,11 +40,15 @@ if (yearEl) yearEl.textContent = new Date().getFullYear();
 let items = [];
 let discounts = [];
 let settings = { instagram:'#', whatsapp:'', currency:'S/' };
-let products = []; // items with _discount applied
+let products = []; // items enriched with _discount if applies
 let filtered = [];
-let categories = []; // prefixes
+let categories = [];
 let activeCategory = null;
 let currentIdx = 0;
+
+/* scroll lock refcount */
+let scrollLockCount = 0;
+let scrollYBefore = 0;
 
 /* helpers */
 const currencyFormat = v => {
@@ -55,7 +56,6 @@ const currencyFormat = v => {
   catch(e){ return `${settings.currency} ${Number(v).toFixed(2)}`; }
 };
 const escapeHtml = s => s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : '';
-const todayISO = () => new Date().toISOString().slice(0,10);
 
 /* prevent pinch/zoom */
 function preventZoom(){
@@ -64,7 +64,7 @@ function preventZoom(){
   window.addEventListener('wheel', e => { if (e.ctrlKey) e.preventDefault(); }, { passive:false });
 }
 
-/* fetch JSON helper */
+/* fetch helper */
 async function fetchJson(url){
   const r = await fetch(url, {cache:'no-cache'});
   if (!r.ok) throw new Error(`${url} not found (${r.status})`);
@@ -77,7 +77,7 @@ async function init(){
     [items, discounts, settings] = await Promise.all([fetchJson(ITEMS_URL), fetchJson(DISCOUNTS_URL), fetchJson(SETTINGS_URL)]);
   } catch (err) {
     console.error('Error cargando JSONs', err);
-    document.getElementById('grid').innerHTML = `<div style="padding:20px;color:#777">Error cargando datos. Revisa la consola.</div>`;
+    grid.innerHTML = `<div style="padding:20px;color:#777">Error cargando datos. Revisa la consola.</div>`;
     return;
   }
 
@@ -105,7 +105,7 @@ function applyDiscounts(){
   });
 }
 
-/* build categories from SKU prefix */
+/* build category prefixes */
 function buildCategories(){
   const s = new Set();
   products.forEach(p => { if (p.sku && p.sku.length) s.add(p.sku.trim().charAt(0).toUpperCase()); });
@@ -113,12 +113,12 @@ function buildCategories(){
 }
 
 /* label map */
-function labelFor(p){
+function labelFor(prefix){
   const map = { C:'Camisetas', Z:'Zapatillas', A:'Accesorios', P:'Pantalones', S:'Sudaderas', B:'Bolsos', R:'Relojes' };
-  return map[p] || p;
+  return map[prefix] || prefix;
 }
 
-/* render dynamic categories in submenu */
+/* render categories submenu */
 function renderCategories(){
   submenuCategories.innerHTML = '';
   if (!categories.length) {
@@ -129,12 +129,12 @@ function renderCategories(){
     const btn = document.createElement('button');
     btn.className = 'cat-btn';
     btn.textContent = `${labelFor(pref)} (${pref})`;
-    btn.addEventListener('click', () => { activeCategory = pref; document.getElementById('searchInput').value=''; applyFiltersAndRender(); closeSidebar(); });
+    btn.addEventListener('click', ()=>{ activeCategory = pref; document.getElementById('searchInput').value=''; applyFiltersAndRender(); closeSidebar(); });
     submenuCategories.appendChild(btn);
   });
 }
 
-/* apply filters, search, sort and render */
+/* filtering, searching, sorting */
 function applyFiltersAndRender(){
   const q = (searchInput.value || '').trim().toLowerCase();
   const promoWords = ['oferta','ofertas','promo','promocion','promociones','descuento','descuentos'];
@@ -164,7 +164,7 @@ function applyFiltersAndRender(){
   renderGrid(list);
 }
 
-/* render grid */
+/* render product cards */
 function renderGrid(list){
   grid.innerHTML = '';
   if (!list.length) {
@@ -196,13 +196,29 @@ function renderGrid(list){
         <div class="card-meta">SKU: ${escapeHtml(p.sku || '')}</div>
       </div>
     `;
-    card.addEventListener('click', () => openModal(idx));
+    card.addEventListener('click', ()=> openModal(idx));
     grid.appendChild(card);
   });
 }
 
-/* open modal (fullscreen image cover) */
-let scrollYBefore = 0;
+/* modal open / close with scroll lock refcount */
+function addScrollLock(){
+  if (scrollLockCount === 0) {
+    scrollYBefore = window.scrollY || window.pageYOffset;
+    document.body.classList.add('body-locked');
+    document.body.style.top = `-${scrollYBefore}px`;
+  }
+  scrollLockCount++;
+}
+function removeScrollLock(){
+  scrollLockCount = Math.max(0, scrollLockCount - 1);
+  if (scrollLockCount === 0) {
+    document.body.classList.remove('body-locked');
+    document.body.style.top = '';
+    window.scrollTo(0, scrollYBefore);
+  }
+}
+
 function openModal(index){
   const item = filtered[index];
   if (!item) return;
@@ -228,7 +244,7 @@ function openModal(index){
     modalPrice.textContent = currencyFormat(item.price);
   }
 
-  // actions (IG / WA)
+  // actions
   modalActions.innerHTML = '';
   const igA = document.createElement('a');
   igA.className = 'btn btn-ig';
@@ -248,44 +264,27 @@ function openModal(index){
   } else waA.href = '#';
   modalActions.appendChild(waA);
 
-  // show modal & lock background scroll
   productModal.classList.add('active');
   productModal.setAttribute('aria-hidden','false');
-  lockScroll();
+  addScrollLock();
 }
 
-/* modal controls */
 function closeModal(){
   productModal.classList.remove('active');
   productModal.setAttribute('aria-hidden','true');
   modalImage.src = '';
-  unlockScroll();
+  removeScrollLock();
 }
 function modalPrev(){ if (!filtered.length) return; currentIdx = (currentIdx - 1 + filtered.length) % filtered.length; openModal(currentIdx); }
 function modalNext(){ if (!filtered.length) return; currentIdx = (currentIdx + 1) % filtered.length; openModal(currentIdx); }
 
-/* lock/unlock scroll helpers */
-function lockScroll(){
-  scrollYBefore = window.scrollY || window.pageYOffset;
-  document.body.classList.add('body-locked');
-  document.body.style.top = `-${scrollYBefore}px`;
-}
-function unlockScroll(){
-  document.body.classList.remove('body-locked');
-  document.body.style.top = '';
-  window.scrollTo(0, scrollYBefore);
-}
-
-/* sidebar open/close with blur overlay, lock background scroll except sidebar */
+/* sidebar open/close */
 function openSidebar(){
   sidebar.classList.add('open');
   overlay.classList.add('show');
   overlay.hidden = false;
   sidebar.setAttribute('aria-hidden','false');
-  // lock background scroll
-  document.body.classList.add('body-locked');
-  document.body.style.top = `-${window.scrollY}px`;
-  // allow sidebar to scroll
+  addScrollLock();
   sidebar.style.overflow = 'auto';
 }
 function closeSidebar(){
@@ -293,13 +292,10 @@ function closeSidebar(){
   overlay.classList.remove('show');
   overlay.hidden = true;
   sidebar.setAttribute('aria-hidden','true');
-  // unlock background scroll
-  document.body.classList.remove('body-locked');
-  document.body.style.top = '';
-  window.scrollTo(0, Math.abs(parseInt(document.body.style.top || '0')));
+  removeScrollLock();
 }
 
-/* attach UI events */
+/* attach UI */
 function attachUI(){
   menuToggle.addEventListener('click', openSidebar);
   closeMenu.addEventListener('click', closeSidebar);
@@ -313,27 +309,26 @@ function attachUI(){
       if (action === 'promociones') { activeCategory = null; searchInput.value='oferta'; applyFiltersAndRender(); closeSidebar(); }
       if (action === 'categorias') {
         // toggle submenu visibility
-        const submenu = e.currentTarget.querySelector('.submenu') || submenuCategories;
-        const hidden = submenu.getAttribute('aria-hidden') === 'true';
-        submenu.setAttribute('aria-hidden', String(!hidden));
+        const hidden = submenuCategories.getAttribute('aria-hidden') === 'true';
+        submenuCategories.setAttribute('aria-hidden', String(!hidden));
       }
     });
   });
 
-  // search with debounce
+  // search -> debounce
   let timer = null;
-  searchInput.addEventListener('input', () => {
+  searchInput.addEventListener('input', ()=> {
     clearTimeout(timer);
     timer = setTimeout(()=>{ activeCategory = null; applyFiltersAndRender(); }, 160);
   });
 
-  // sort change in real time
-  sortSelect.addEventListener('change', () => applyFiltersAndRender());
+  // sort in real time
+  sortSelect.addEventListener('change', ()=> applyFiltersAndRender());
 
   // modal controls
-  modalClose.addEventListener('click', closeModal);
-  modalPrev.addEventListener('click', (e)=>{ e.stopPropagation(); modalPrev(); });
-  modalNext.addEventListener('click', (e)=>{ e.stopPropagation(); modalNext(); });
+  if (modalClose) modalClose.addEventListener('click', closeModal);
+  if (modalPrev) modalPrev.addEventListener('click', (e)=>{ e.stopPropagation(); modalPrev(); });
+  if (modalNext) modalNext.addEventListener('click', (e)=>{ e.stopPropagation(); modalNext(); });
   productModal.addEventListener('click', (e)=> { if (e.target === productModal) closeModal(); });
 
   // keyboard
@@ -348,5 +343,5 @@ function attachUI(){
   });
 }
 
-/* initialize */
+/* start */
 init();
