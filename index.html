@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#ffffff"/>
+  <title>Mi Tienda</title>
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+  <!-- Material Symbols -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <button id="menu-btn" class="icon-btn">
+      <span class="material-symbols-outlined">menu</span>
+    </button>
+    <h1 class="app-title">Mi Tienda</h1>
+    <input type="text" id="search" placeholder="Buscar productos..." />
+  </header>
+
+  <!-- Menú lateral -->
+  <aside id="filter-menu" class="filter-menu">
+    <h2>Categorías</h2>
+    <ul id="filter-list"></ul>
+  </aside>
+
+  <main id="grid" class="grid"></main>
+
+  <!-- Modal de producto -->
+  <div id="product-modal" class="modal">
+    <div class="modal-content">
+      <button id="close-modal" class="icon-btn close-btn">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+      <button id="prev-product" class="icon-btn nav-btn left">
+        <span class="material-symbols-outlined">chevron_left</span>
+      </button>
+      <button id="next-product" class="icon-btn nav-btn right">
+        <span class="material-symbols-outlined">chevron_right</span>
+      </button>
+      <img id="modal-img" alt="">
+      <h2 id="modal-title"></h2>
+      <p id="modal-desc"></p>
+      <p class="price">
+        <span id="modal-price"></span>
+        <span id="modal-old-price" class="old-price"></span>
+      </p>
+      <div class="actions">
+        <a id="modal-insta" target="_blank" class="icon-btn">
+          <span class="material-symbols-outlined">photo_camera</span>
+        </a>
+        <a id="modal-wpp" target="_blank" class="icon-btn">
+          <span class="material-symbols-outlined">chat</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
