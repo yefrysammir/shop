@@ -1,70 +1,108 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0,viewport-fit=cover" />
   <meta name="theme-color" content="#ffffff" />
-  <title>Mi Tienda</title>
+  <title>Mi Tienda — Premium</title>
+
+  <!-- Inter + iOS fallback -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300,0,0" rel="stylesheet">
+
   <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300" rel="stylesheet" />
+  <script src="app.js" defer></script>
   <link rel="manifest" href="manifest.json" />
 </head>
 <body>
-  <header class="app-bar">
-    <button id="menuToggle" class="icon-btn">
+  <header class="topbar">
+    <button id="menuToggle" class="icon-btn" aria-label="Abrir menú">
       <span class="material-symbols-outlined">menu</span>
     </button>
-    <h1 class="app-title">Mi Tienda</h1>
-    <input type="text" id="searchInput" placeholder="Buscar productos..." />
+
+    <div class="brand">
+      <img src="icons/icon-192.png" alt="logo" class="logo">
+      <div class="title">Mi Tienda</div>
+    </div>
+
+    <div class="controls">
+      <input id="searchInput" type="search" placeholder="Buscar (título, SKU) o escribe 'oferta' / 'promo' / 'descuento'">
+    </div>
   </header>
 
-  <aside id="sideMenu" class="side-menu">
-    <nav>
-      <ul>
-        <li data-filter="all">Inicio</li>
-        <li data-filter="promo">Promociones</li>
-        <li data-filter="C">Camisetas</li>
-        <li data-filter="Z">Zapatillas</li>
-        <li data-filter="P">Pantalones</li>
-        <li data-filter="S">Sudaderas</li>
-        <li data-filter="A">Accesorios</li>
-      </ul>
-    </nav>
-    <div class="sort-section">
-      <label for="sortSelect">Ordenar por:</label>
-      <select id="sortSelect">
-        <option value="none">Por defecto</option>
-        <option value="asc">Precio: menor a mayor</option>
-        <option value="desc">Precio: mayor a menor</option>
-      </select>
-    </div>
-  </aside>
-
-  <main id="productGrid" class="grid"></main>
-  <p id="noResults" class="no-results">No se encontraron productos</p>
-
-  <div id="productModal" class="modal">
-    <div class="modal-content">
-      <button id="closeModal" class="icon-btn close-btn">
+  <!-- Sidebar (drawer) -->
+  <aside id="sidebar" class="sidebar" aria-hidden="true">
+    <div class="sidebar-head">
+      <div class="sidebar-brand">
+        <img src="icons/icon-192.png" alt="logo" class="logo-sm">
+        <strong>Mi Tienda</strong>
+      </div>
+      <button id="closeMenu" class="icon-btn" aria-label="Cerrar menú">
         <span class="material-symbols-outlined">close</span>
       </button>
-      <img id="modalImage" alt="Producto" />
-      <h2 id="modalTitle"></h2>
-      <p id="modalDescription"></p>
-      <div id="modalPrice"></div>
-      <div id="modalSizes" class="sizes"></div>
-      <div class="actions">
-        <a id="btnInstagram" target="_blank" class="btn insta-btn">
-          <span class="material-symbols-outlined">photo_camera</span> Instagram
-        </a>
-        <a id="btnWhatsapp" target="_blank" class="btn whatsapp-btn">
-          <span class="material-symbols-outlined">chat</span> WhatsApp
-        </a>
-      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <ul class="main-nav">
+        <li class="nav-item" data-action="inicio">Inicio</li>
+        <li class="nav-item has-submenu" data-action="categorias">
+          Categorías
+          <div class="submenu" id="submenuCategories" aria-hidden="true"></div>
+        </li>
+        <li class="nav-item" data-action="promociones">Promociones</li>
+      </ul>
+    </nav>
+  </aside>
+
+  <!-- overlay that blurs background when menu open -->
+  <div id="overlay" class="overlay" hidden></div>
+
+  <!-- Sorting bar (fixed above grid area) -->
+  <div class="sort-bar">
+    <label for="sortSelect" class="sr-only">Ordenar por:</label>
+    <div class="custom-select">
+      <select id="sortSelect">
+        <option value="relevance">Relevancia</option>
+        <option value="price_asc">Precio: menor → mayor</option>
+        <option value="price_desc">Precio: mayor → menor</option>
+        <option value="name_az">Nombre A → Z</option>
+        <option value="name_za">Nombre Z → A</option>
+      </select>
+      <span class="material-symbols-outlined select-icon">expand_more</span>
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <main class="main">
+    <section id="grid" class="grid" aria-live="polite"></section>
+    <div id="noResults" class="no-results" hidden>No se encontró producto(s) parecido(s).</div>
+  </main>
+
+  <!-- Product modal (fullscreen) -->
+  <div id="productModal" class="product-modal" aria-hidden="true">
+    <div class="modal-top">
+      <div></div>
+      <div class="modal-controls">
+        <button id="modalPrev" class="icon-btn" aria-label="Anterior"><span class="material-symbols-outlined">arrow_back</span></button>
+        <button id="modalNext" class="icon-btn" aria-label="Siguiente"><span class="material-symbols-outlined">arrow_forward</span></button>
+        <button id="modalClose" class="icon-btn" aria-label="Cerrar"><span class="material-symbols-outlined">close</span></button>
+      </div>
+    </div>
+
+    <!-- image covers 100% (no padding/margin) -->
+    <div class="modal-media">
+      <img id="modalImage" alt="">
+    </div>
+
+    <!-- info panel slides above image bottom -->
+    <div class="modal-body">
+      <h2 id="modalTitle"></h2>
+      <p id="modalDesc" class="muted"></p>
+      <div id="modalSizes" class="sizes"></div>
+      <div id="modalPrice" class="modal-price"></div>
+      <div id="modalActions" class="modal-actions"></div>
+    </div>
+  </div>
+
+  <footer class="app-footer">© <span id="year"></span> Mi Tienda — Premium</footer>
 </body>
 </html>
