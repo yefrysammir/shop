@@ -1,198 +1,139 @@
-const ITEMS_PER_PAGE = 8;
 let products = [];
-let discounts = {};
-let filteredProducts = [];
-let currentPage = 1;
-let currentCategory = null;
+let discounts = [];
+let settings = {};
+const productGrid = document.getElementById("productGrid");
+const searchInput = document.getElementById("searchInput");
+const noResults = document.getElementById("noResults");
+const sideMenu = document.getElementById("sideMenu");
+const menuToggle = document.getElementById("menuToggle");
+const sortSelect = document.getElementById("sortSelect");
 
-// Load data
 async function loadData() {
-  try {
-    const [itemsRes, discountsRes] = await Promise.all([
-      fetch("items.json"),
-      fetch("discounts.json")
-    ]);
-    products = await itemsRes.json();
-    discounts = await discountsRes.json();
-    applyDiscounts();
-    renderCategorySubmenu();
-    renderProducts();
-  } catch (err) {
-    console.error("Error cargando datos", err);
-  }
+  const [itemsRes, discountsRes, settingsRes] = await Promise.all([
+    fetch("items.json"),
+    fetch("discounts.json"),
+    fetch("settings.json")
+  ]);
+
+  products = await itemsRes.json();
+  discounts = await discountsRes.json();
+  settings = await settingsRes.json();
+
+  applyDiscounts();
+  renderProducts(products);
 }
 
 function applyDiscounts() {
-  const now = new Date();
-  products.forEach(p => {
-    const d = discounts[p.sku];
-    if (d) {
-      const end = new Date(d.endDate);
-      if (end >= now) {
-        p.discountPercent = d.percent;
-        p.discountedPrice = (p.price * (1 - d.percent / 100)).toFixed(2);
+  const today = new Date();
+  products = products.map(prod => {
+    const discount = discounts.find(d => d.sku === prod.sku);
+    if (discount) {
+      const expDate = new Date(discount.expires);
+      if (today <= expDate) {
+        prod.oldPrice = prod.price;
+        prod.price = Math.round(prod.price * (1 - discount.percentage / 100));
+        prod.discount = discount.percentage;
       }
     }
+    return prod;
   });
 }
 
-// Render products
-function renderProducts() {
-  const list = document.getElementById("product-list");
-  const noResults = document.getElementById("no-results");
-  list.innerHTML = "";
-
-  let data = [...products];
-
-  // Search filter
-  const q = document.getElementById("search").value.toLowerCase();
-  if (q) {
-    data = data.filter(p =>
-      p.title.toLowerCase().includes(q) ||
-      p.description.toLowerCase().includes(q) ||
-      (p.discountPercent && ["oferta","descuento","promo","promocion","promociones"].some(word => q.includes(word)))
-    );
-  }
-
-  // Category filter
-  if (currentCategory) {
-    data = data.filter(p => p.sku.startsWith(currentCategory));
-  }
-
-  // Sorting
-  const sortVal = document.getElementById("sort").value;
-  if (sortVal === "asc") data.sort((a,b) => (a.discountedPrice||a.price) - (b.discountedPrice||b.price));
-  if (sortVal === "desc") data.sort((a,b) => (b.discountedPrice||b.price) - (a.discountedPrice||a.price));
-
-  filteredProducts = data;
-
-  if (data.length === 0) {
+function renderProducts(list) {
+  productGrid.innerHTML = "";
+  if (list.length === 0) {
     noResults.style.display = "block";
-    document.getElementById("pagination").innerHTML = "";
     return;
   }
   noResults.style.display = "none";
 
-  const start = (currentPage - 1) * ITEMS_PER_PAGE;
-  const pageItems = data.slice(start, start + ITEMS_PER_PAGE);
-
-  pageItems.forEach(p => {
+  list.forEach(prod => {
     const card = document.createElement("div");
-    card.className = "product-card";
+    card.className = "card";
     card.innerHTML = `
-      <img src="${p.image}" alt="${p.title}" />
-      ${p.discountPercent ? `<span class="discount-tag">-${p.discountPercent}%</span>` : ""}
-      <div class="product-info">
-        <h3 class="product-title">${p.title}</h3>
-        <div class="product-prices">
-          ${p.discountPercent
-            ? `<span class="price" style="color:#e53935">S/ ${p.discountedPrice}</span><span class="old-price">S/ ${p.price}</span>`
-            : `<span class="price">S/ ${p.price}</span>`}
-        </div>
+      ${prod.discount ? `<div class="badge">-${prod.discount}%</div>` : ""}
+      <img src="${prod.image}" alt="${prod.title}" />
+      <div class="card-content">
+        <h3>${prod.title}</h3>
+        <p class="price">
+          ${prod.oldPrice ? `<span class="old-price">S/${prod.oldPrice}</span>` : ""}
+          S/${prod.price}
+        </p>
       </div>
     `;
-    card.addEventListener("click", () => openModal(p));
-    list.appendChild(card);
-  });
-
-  renderPagination();
-}
-
-function renderPagination() {
-  const pages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
-  const pagination = document.getElementById("pagination");
-  pagination.innerHTML = "";
-  if (pages <= 1) return;
-
-  for (let i = 1; i <= pages; i++) {
-    const btn = document.createElement("button");
-    btn.className = "page-btn" + (i === currentPage ? " active" : "");
-    btn.textContent = i;
-    btn.addEventListener("click", () => { currentPage = i; renderProducts(); });
-    pagination.appendChild(btn);
-  }
-}
-
-function renderCategorySubmenu() {
-  const submenu = document.getElementById("category-submenu");
-  submenu.innerHTML = "";
-  const categories = [...new Set(products.map(p => p.sku.charAt(0)))];
-  categories.forEach(c => {
-    const li = document.createElement("li");
-    const btn = document.createElement("button");
-    btn.className = "menu-link";
-    btn.textContent = c === "Z" ? "Zapatillas" : c === "C" ? "Camisetas" : c;
-    btn.addEventListener("click", () => {
-      currentCategory = c;
-      currentPage = 1;
-      closeMenu();
-      renderProducts();
-    });
-    li.appendChild(btn);
-    submenu.appendChild(li);
+    card.addEventListener("click", () => openModal(prod));
+    productGrid.appendChild(card);
   });
 }
 
-// Modal
-function openModal(p) {
-  const modal = document.getElementById("product-modal");
-  modal.classList.add("show");
-  document.body.style.overflow = "hidden";
+function openModal(prod) {
+  document.getElementById("productModal").style.display = "block";
+  document.getElementById("modalImage").src = prod.image;
+  document.getElementById("modalTitle").textContent = prod.title;
+  document.getElementById("modalDescription").textContent = prod.description;
+  document.getElementById("modalPrice").innerHTML = `
+    ${prod.oldPrice ? `<span class="old-price">S/${prod.oldPrice}</span>` : ""}
+    S/${prod.price}
+  `;
 
-  document.getElementById("modal-image").src = p.image;
-  document.getElementById("modal-title").textContent = p.title;
-  document.getElementById("modal-description").textContent = p.description;
-  const prices = document.getElementById("modal-prices");
-  prices.innerHTML = p.discountPercent
-    ? `<span class="price" style="color:#e53935">S/ ${p.discountedPrice}</span> <span class="old-price">S/ ${p.price}</span> <span class="discount-tag">-${p.discountPercent}%</span>`
-    : `<span class="price">S/ ${p.price}</span>`;
-
-  const sizes = document.getElementById("modal-sizes");
+  const sizes = document.getElementById("modalSizes");
   sizes.innerHTML = "";
-  if (p.sizes && p.sizes.length > 0) {
-    p.sizes.forEach(s => {
-      const box = document.createElement("div");
-      box.className = "size-box";
-      box.textContent = s;
-      sizes.appendChild(box);
+  if (prod.sizes && prod.sizes.length > 0) {
+    prod.sizes.forEach(size => {
+      const chip = document.createElement("span");
+      chip.className = "size-chip";
+      chip.textContent = size;
+      sizes.appendChild(chip);
     });
   }
 
-  document.getElementById("modal-instagram").href = p.instagram;
-  document.getElementById("modal-whatsapp").href = p.whatsapp;
+  document.getElementById("btnInstagram").href = settings.instagram;
+  document.getElementById("btnWhatsapp").href = `https://wa.me/${settings.whatsapp}?text=Estoy interesado en ${prod.title}`;
 }
 
-document.getElementById("modal-close").addEventListener("click", () => {
-  document.getElementById("product-modal").classList.remove("show");
-  document.body.style.overflow = "";
+document.getElementById("closeModal").addEventListener("click", () => {
+  document.getElementById("productModal").style.display = "none";
 });
 
-// Menu
-document.getElementById("menu-toggle").addEventListener("click", () => {
-  document.getElementById("side-menu").classList.add("open");
-  document.getElementById("menu-overlay").classList.add("active");
-  document.body.style.overflow = "hidden";
-});
-function closeMenu() {
-  document.getElementById("side-menu").classList.remove("open");
-  document.getElementById("menu-overlay").classList.remove("active");
-  document.body.style.overflow = "";
-}
-document.getElementById("menu-close").addEventListener("click", closeMenu);
-document.getElementById("menu-overlay").addEventListener("click", closeMenu);
-
-document.querySelector(".submenu-toggle").addEventListener("click", e => {
-  document.getElementById("category-submenu").classList.toggle("show");
+searchInput.addEventListener("input", e => {
+  const q = e.target.value.toLowerCase();
+  let filtered = products.filter(
+    p =>
+      p.title.toLowerCase().includes(q) ||
+      p.description.toLowerCase().includes(q)
+  );
+  if (["oferta", "promo", "promociones", "descuento"].includes(q)) {
+    filtered = products.filter(p => p.discount);
+  }
+  renderProducts(filtered);
 });
 
-// Search & Sort
-document.getElementById("search").addEventListener("input", () => {
-  currentPage = 1;
-  renderProducts();
-});
-document.getElementById("sort").addEventListener("change", () => {
-  renderProducts();
+menuToggle.addEventListener("click", () => {
+  sideMenu.classList.toggle("active");
 });
 
-// Initial load
+sideMenu.addEventListener("click", e => {
+  if (e.target.dataset.filter) {
+    const filter = e.target.dataset.filter;
+    let filtered = [...products];
+    if (filter === "promo") {
+      filtered = products.filter(p => p.discount);
+    } else if (filter !== "all") {
+      filtered = products.filter(p => p.sku.startsWith(filter));
+    }
+    renderProducts(filtered);
+    sideMenu.classList.remove("active");
+  }
+});
+
+sortSelect.addEventListener("change", e => {
+  let sorted = [...products];
+  if (e.target.value === "asc") {
+    sorted.sort((a, b) => a.price - b.price);
+  } else if (e.target.value === "desc") {
+    sorted.sort((a, b) => b.price - a.price);
+  }
+  renderProducts(sorted);
+});
+
 loadData();
