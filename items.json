@@ -1,0 +1,200 @@
+[
+  {
+    "sku": "C001",
+    "title": "Camiseta Blanca",
+    "description": "Camiseta de algodón suave.",
+    "price": 20.00,
+    "image": "https://picsum.photos/id/1014/1200/1200",
+    "instagram": "https://instagram.com/tienda",
+    "whatsapp": "https://wa.me/123456789"
+  },
+  {
+    "sku": "C002",
+    "title": "Camiseta Negra",
+    "description": "Básica y elegante.",
+    "price": 22.00,
+    "image": "https://picsum.photos/id/1015/1200/1200",
+    "instagram": "https://instagram.com/tienda",
+    "whatsapp": "https://wa.me/123456789"
+  },
+  {
+    "sku": "C003",
+    "title": "Camiseta Roja",
+    "description": "Perfecta para destacar.",
+    "price": 25.00,
+    "image": "https://picsum.photos/id/1016/1200/1200",
+    "instagram": "https://instagram.com/tienda",
+    "whatsapp": "https://wa.me/123456789"
+  },
+  {
+    "sku": "Z001",
+    "title": "Zapatillas Running",
+    "description": "Ideales para correr.",
+    "price": 50.00,
+    "image": "https://picsum.photos/id/1017/1200/1200",
+    "instagram": "https://instagram.com/tienda",
+    "whatsapp": "https://wa.me/123456789"
+  },
+  {
+    "sku": "Z002",
+    "title": "Zapatillas Urbanas",
+    "description": "Estilo casual.",
+    "price": 60.00,
+    "image": "https://picsum.photos/id/1018/1200/1200",
+    "instagram": "https://instagram.com/tienda",
+    "whatsapp": "https://wa.me/123456789"
+  },
+  {
+    "sku": "Z003",
+    "title": "Zapatillas Deportivas",
+    "description": "Comodidad total.",
+    "price": 65.00,
+    "image": "https://picsum.photos/id/1019/1200/1200",
+    "instagram": "https://instagram.com/tienda",
+    "whatsapp": "https://wa.me/123456789"
+  },
+  {
+    "sku": "A001",
+    "title": "Accesorio Gorro",
+    "description": "Protege del sol.",
+    "price": 15.00,
+    "image": "https://picsum.photos/id/1020/1200/1200",
+    "instagram": "https://instagram.com/tienda",
+    "whatsapp": "https://wa.me/123456789"
+  },
+  {
+    "sku": "A002",
+    "title": "Accesorio Bufanda",
+    "description": "Abrigo para invierno.",
+    "price": 18.00,
+    "image": "https://picsum.photos/id/1021/1200/1200",
+    "instagram": "https://instagram.com/tienda",
+    "whatsapp": "https://wa.me/123456789"
+  },
+  {
+    "sku": "A003",
+    "title": "Accesorio Cinturón",
+    "description": "De cuero legítimo.",
+    "price": 25.00,
+    "image": "https://picsum.photos/id/1022/1200/1200",
+    "instagram": "https://instagram.com/tienda",
+    "whatsapp": "https://wa.me/123456789"
+  },
+  {
+    "sku": "P001",
+    "title": "Pantalón Jeans",
+    "description": "Clásico azul.",
+    "price": 40.00,
+    "image": "https://picsum.photos/id/1023/1200/1200",
+    "instagram": "https://instagram.com/tienda",
+    "whatsapp": "https://wa.me/123456789"
+  },
+  {
+    "sku": "P002",
+    "title": "Pantalón Chino",
+    "description": "Casual y elegante.",
+    "price": 42.00,
+    "image": "https://picsum.photos/id/1024/1200/1200",
+    "instagram": "https://instagram.com/tienda",
+    "whatsapp": "https://wa.me/123456789"
+  },
+  {
+    "sku": "P003",
+    "title": "Pantalón Corto",
+    "description": "Ideal verano.",
+    "price": 30.00,
+    "image": "https://picsum.photos/id/1025/1200/1200",
+    "instagram": "https://instagram.com/tienda",
+    "whatsapp": "https://wa.me/123456789"
+  },
+  {
+    "sku": "B001",
+    "title": "Bolso Deportivo",
+    "description": "Gran capacidad.",
+    "price": 45.00,
+    "image": "https://picsum.photos/id/1026/1200/1200",
+    "instagram": "https://instagram.com/tienda",
+    "whatsapp": "https://wa.me/123456789"
+  },
+  {
+    "sku": "B002",
+    "title": "Bolso Casual",
+    "description": "Ligero y práctico.",
+    "price": 35.00,
+    "image": "https://picsum.photos/id/1027/1200/1200",
+    "instagram": "https://instagram.com/tienda",
+    "whatsapp": "https://wa.me/123456789"
+  },
+  {
+    "sku": "B003",
+    "title": "Bolso Elegante",
+    "description": "Perfecto para eventos.",
+    "price": 55.00,
+    "image": "https://picsum.photos/id/1028/1200/1200",
+    "instagram": "https://instagram.com/tienda",
+    "whatsapp": "https://wa.me/123456789"
+  },
+  {
+    "sku": "S001",
+    "title": "Sombrero Playa",
+    "description": "Estilo veraniego.",
+    "price": 12.00,
+    "image": "https://picsum.photos/id/1029/1200/1200",
+    "instagram": "https://instagram.com/tienda",
+    "whatsapp": "https://wa.me/123456789"
+  },
+  {
+    "sku": "S002",
+    "title": "Sombrero Urbano",
+    "description": "Tendencia actual.",
+    "price": 14.00,
+    "image": "https://picsum.photos/id/1030/1200/1200",
+    "instagram": "https://instagram.com/tienda",
+    "whatsapp": "https://wa.me/123456789"
+  },
+  {
+    "sku": "S003",
+    "title": "Sombrero Deportivo",
+    "description": "Ligero y cómodo.",
+    "price": 16.00,
+    "image": "https://picsum.photos/id/1031/1200/1200",
+    "instagram": "https://instagram.com/tienda",
+    "whatsapp": "https://wa.me/123456789"
+  },
+  {
+    "sku": "R001",
+    "title": "Reloj Clásico",
+    "description": "Elegante y funcional.",
+    "price": 70.00,
+    "image": "https://picsum.photos/id/1032/1200/1200",
+    "instagram": "https://instagram.com/tienda",
+    "whatsapp": "https://wa.me/123456789"
+  },
+  {
+    "sku": "R002",
+    "title": "Reloj Deportivo",
+    "description": "Resistente al agua.",
+    "price": 80.00,
+    "image": "https://picsum.photos/id/1033/1200/1200",
+    "instagram": "https://instagram.com/tienda",
+    "whatsapp": "https://wa.me/123456789"
+  },
+  {
+    "sku": "R003",
+    "title": "Reloj Digital",
+    "description": "Moderno y preciso.",
+    "price": 75.00,
+    "image": "https://picsum.photos/id/1034/1200/1200",
+    "instagram": "https://instagram.com/tienda",
+    "whatsapp": "https://wa.me/123456789"
+  },
+  {
+    "sku": "R004",
+    "title": "Reloj Premium",
+    "description": "Lujo y estilo.",
+    "price": 120.00,
+    "image": "https://picsum.photos/id/1035/1200/1200",
+    "instagram": "https://instagram.com/tienda",
+    "whatsapp": "https://wa.me/123456789"
+  }
+]
