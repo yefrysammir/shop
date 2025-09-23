@@ -1,109 +1,75 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0,viewport-fit=cover" />
-  <meta name="theme-color" content="#16a34a" />
-  <title>Mi Tienda — Premium</title>
-
-  <!-- Inter + Material symbols -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300,0,0" rel="stylesheet">
-
-  <link rel="stylesheet" href="style.css" />
-  <script src="app.js" defer></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>YSTore</title>
   <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
+  <!-- Google Fonts: Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
+  <!-- Material Symbols -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300" rel="stylesheet" />
 </head>
 <body>
-  <header class="topbar">
-    <button id="menuToggle" class="icon-btn" aria-label="Abrir menú">
-      <span class="material-symbols-outlined">menu</span>
-    </button>
-
-    <div class="brand">
-      <img src="icons/icon-192.png" alt="logo" class="logo">
-      <div class="title">Mi Tienda</div>
-    </div>
-
-    <div class="controls">
-      <input id="searchInput" type="search" placeholder="Buscar (título, SKU) o escribe 'oferta' / 'promo' / 'descuento'">
-    </div>
+  <header class="app-header">
+    <button id="menu-toggle" class="icon-button material-symbols-outlined">menu</button>
+    <h1 class="app-title">YSTore</h1>
   </header>
 
-  <!-- Sidebar (drawer) -->
-  <aside id="sidebar" class="sidebar" aria-hidden="true">
-    <div class="sidebar-head">
-      <div class="sidebar-brand">
-        <img src="icons/icon-192.png" alt="logo" class="logo-sm">
-        <strong>Mi Tienda</strong>
-      </div>
-      <button id="closeMenu" class="icon-btn" aria-label="Cerrar menú">
-        <span class="material-symbols-outlined">close</span>
-      </button>
+  <!-- Menú lateral -->
+  <nav id="side-menu" class="side-menu">
+    <div class="menu-header">
+      <span class="menu-title">Menú</span>
+      <button id="menu-close" class="icon-button material-symbols-outlined">close</button>
     </div>
+    <ul class="menu-list">
+      <li><button class="menu-link" data-section="inicio">Inicio</button></li>
+      <li>
+        <button class="menu-link submenu-toggle">Categorías</button>
+        <ul class="submenu" id="category-submenu"></ul>
+      </li>
+      <li><button class="menu-link" data-section="promociones">Promociones</button></li>
+    </ul>
+  </nav>
+  <div id="menu-overlay"></div>
 
-    <nav class="sidebar-nav">
-      <ul class="main-nav">
-        <li class="nav-item" data-action="inicio">Inicio</li>
-
-        <li class="nav-item has-submenu" data-action="categorias">
-          Categorías
-          <div class="submenu" id="submenuCategories" aria-hidden="true"></div>
-        </li>
-
-        <li class="nav-item" data-action="promociones">Promociones</li>
-      </ul>
-    </nav>
-  </aside>
-
-  <!-- overlay that blurs background when menu open -->
-  <div id="overlay" class="overlay" hidden></div>
-
-  <!-- Sort bar (styled select above grid) -->
-  <div class="sort-bar">
-    <div class="custom-select">
-      <select id="sortSelect" aria-label="Ordenar">
-        <option value="relevance">Relevancia</option>
-        <option value="price_asc">Precio: menor → mayor</option>
-        <option value="price_desc">Precio: mayor → menor</option>
-        <option value="name_az">Nombre A → Z</option>
-        <option value="name_za">Nombre Z → A</option>
+  <main class="content">
+    <div class="search-sort-bar">
+      <input type="text" id="search" placeholder="Buscar productos..." />
+      <select id="sort">
+        <option value="">Ordenar por</option>
+        <option value="asc">Precio: Menor a Mayor</option>
+        <option value="desc">Precio: Mayor a Menor</option>
       </select>
-      <span class="material-symbols-outlined select-icon">expand_more</span>
     </div>
-  </div>
 
-  <main class="main">
-    <section id="grid" class="grid" aria-live="polite"></section>
-    <div id="noResults" class="no-results" hidden>No se encontró producto(s) parecido(s).</div>
+    <div id="product-list" class="product-list"></div>
+    <div id="pagination" class="pagination"></div>
+    <div id="no-results" class="no-results">No se encontraron productos</div>
   </main>
 
-  <!-- Product modal (fullscreen) -->
-  <div id="productModal" class="product-modal" aria-hidden="true">
-    <div class="modal-top">
-      <div></div>
-      <div class="modal-controls">
-        <button id="modalPrev" class="icon-btn" aria-label="Anterior"><span class="material-symbols-outlined">arrow_back</span></button>
-        <button id="modalNext" class="icon-btn" aria-label="Siguiente"><span class="material-symbols-outlined">arrow_forward</span></button>
-        <button id="modalClose" class="icon-btn" aria-label="Cerrar"><span class="material-symbols-outlined">close</span></button>
+  <!-- Modal detalle producto -->
+  <div id="product-modal" class="product-modal">
+    <div class="modal-content">
+      <button id="modal-close" class="icon-button material-symbols-outlined">close</button>
+      <div class="modal-image-container">
+        <img id="modal-image" alt="Imagen del producto" />
+        <span id="modal-discount-tag" class="discount-tag"></span>
       </div>
-    </div>
-
-    <!-- image covers 100% (no padding/margin) -->
-    <div class="modal-media">
-      <img id="modalImage" alt="">
-    </div>
-
-    <!-- info panel slides above image bottom -->
-    <div class="modal-body">
-      <h2 id="modalTitle"></h2>
-      <p id="modalDesc" class="muted"></p>
-      <div id="modalSizes" class="sizes"></div>
-      <div id="modalPrice" class="modal-price"></div>
-      <div id="modalActions" class="modal-actions"></div>
+      <div class="modal-info">
+        <h2 id="modal-title"></h2>
+        <p id="modal-description"></p>
+        <div id="modal-prices" class="modal-prices"></div>
+        <div id="modal-sizes" class="sizes"></div>
+        <div class="modal-actions">
+          <a id="modal-instagram" target="_blank" class="social-btn instagram">Instagram</a>
+          <a id="modal-whatsapp" target="_blank" class="social-btn whatsapp">WhatsApp</a>
+        </div>
+      </div>
     </div>
   </div>
 
-  <footer class="app-footer">© <span id="year"></span> Mi Tienda — Premium</footer>
+  <script src="app.js"></script>
 </body>
 </html>
