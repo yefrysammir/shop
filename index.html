@@ -2,70 +2,65 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>YSTore</title>
-  <link rel="manifest" href="manifest.json" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#ffffff" />
+  <title>Mi Tienda</title>
   <link rel="stylesheet" href="style.css" />
-  <!-- Google Fonts: Inter -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
-  <!-- Material Symbols -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300" rel="stylesheet" />
+  <link rel="manifest" href="manifest.json" />
 </head>
 <body>
-  <header class="app-header">
-    <button id="menu-toggle" class="icon-button material-symbols-outlined">menu</button>
-    <h1 class="app-title">YSTore</h1>
+  <header class="app-bar">
+    <button id="menuToggle" class="icon-btn">
+      <span class="material-symbols-outlined">menu</span>
+    </button>
+    <h1 class="app-title">Mi Tienda</h1>
+    <input type="text" id="searchInput" placeholder="Buscar productos..." />
   </header>
 
-  <!-- Menú lateral -->
-  <nav id="side-menu" class="side-menu">
-    <div class="menu-header">
-      <span class="menu-title">Menú</span>
-      <button id="menu-close" class="icon-button material-symbols-outlined">close</button>
-    </div>
-    <ul class="menu-list">
-      <li><button class="menu-link" data-section="inicio">Inicio</button></li>
-      <li>
-        <button class="menu-link submenu-toggle">Categorías</button>
-        <ul class="submenu" id="category-submenu"></ul>
-      </li>
-      <li><button class="menu-link" data-section="promociones">Promociones</button></li>
-    </ul>
-  </nav>
-  <div id="menu-overlay"></div>
-
-  <main class="content">
-    <div class="search-sort-bar">
-      <input type="text" id="search" placeholder="Buscar productos..." />
-      <select id="sort">
-        <option value="">Ordenar por</option>
-        <option value="asc">Precio: Menor a Mayor</option>
-        <option value="desc">Precio: Mayor a Menor</option>
+  <aside id="sideMenu" class="side-menu">
+    <nav>
+      <ul>
+        <li data-filter="all">Inicio</li>
+        <li data-filter="promo">Promociones</li>
+        <li data-filter="C">Camisetas</li>
+        <li data-filter="Z">Zapatillas</li>
+        <li data-filter="P">Pantalones</li>
+        <li data-filter="S">Sudaderas</li>
+        <li data-filter="A">Accesorios</li>
+      </ul>
+    </nav>
+    <div class="sort-section">
+      <label for="sortSelect">Ordenar por:</label>
+      <select id="sortSelect">
+        <option value="none">Por defecto</option>
+        <option value="asc">Precio: menor a mayor</option>
+        <option value="desc">Precio: mayor a menor</option>
       </select>
     </div>
+  </aside>
 
-    <div id="product-list" class="product-list"></div>
-    <div id="pagination" class="pagination"></div>
-    <div id="no-results" class="no-results">No se encontraron productos</div>
-  </main>
+  <main id="productGrid" class="grid"></main>
+  <p id="noResults" class="no-results">No se encontraron productos</p>
 
-  <!-- Modal detalle producto -->
-  <div id="product-modal" class="product-modal">
+  <div id="productModal" class="modal">
     <div class="modal-content">
-      <button id="modal-close" class="icon-button material-symbols-outlined">close</button>
-      <div class="modal-image-container">
-        <img id="modal-image" alt="Imagen del producto" />
-        <span id="modal-discount-tag" class="discount-tag"></span>
-      </div>
-      <div class="modal-info">
-        <h2 id="modal-title"></h2>
-        <p id="modal-description"></p>
-        <div id="modal-prices" class="modal-prices"></div>
-        <div id="modal-sizes" class="sizes"></div>
-        <div class="modal-actions">
-          <a id="modal-instagram" target="_blank" class="social-btn instagram">Instagram</a>
-          <a id="modal-whatsapp" target="_blank" class="social-btn whatsapp">WhatsApp</a>
-        </div>
+      <button id="closeModal" class="icon-btn close-btn">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+      <img id="modalImage" alt="Producto" />
+      <h2 id="modalTitle"></h2>
+      <p id="modalDescription"></p>
+      <div id="modalPrice"></div>
+      <div id="modalSizes" class="sizes"></div>
+      <div class="actions">
+        <a id="btnInstagram" target="_blank" class="btn insta-btn">
+          <span class="material-symbols-outlined">photo_camera</span> Instagram
+        </a>
+        <a id="btnWhatsapp" target="_blank" class="btn whatsapp-btn">
+          <span class="material-symbols-outlined">chat</span> WhatsApp
+        </a>
       </div>
     </div>
   </div>
