@@ -1,6 +1,6 @@
 {
   "name": "Salem Store",
-  "short_name": "SS",
+  "short_name": "Salem Store",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#ffffff",
