@@ -65,8 +65,8 @@ justify-content: center;
 /* ====== SORT BAR (new area) ====== */
 .sort-bar {
   max-width: 1200px;
-  margin: 12px auto;
-  padding: 0 16px;
+  margin: auto;
+  padding: 0 15px;
   display: flex;
   justify-content: flex-end; /* align right */
   align-items: center;
