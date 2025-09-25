@@ -158,7 +158,7 @@ justify-content: center;
 
 .side-menu ul {
   list-style: none;
-  padding-top: 2rem;
+  padding-top: 3rem;
 }
 
 .side-menu li {
@@ -338,7 +338,7 @@ transition: all 0.2s ease-in-out;
 
 .close-btn {
   position: absolute;
-  top: 42px;
+  top: calc(env(safe-area-inset-top, 0px) + 12px);
   right: 12px;
   color: #fff;
   font-size: 2rem;
