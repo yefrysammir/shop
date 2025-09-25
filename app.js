@@ -149,7 +149,7 @@ function openModal(prod) {
   }
 
   document.getElementById("btnInstagram").href = settings.instagram;
-  document.getElementById("btnWhatsapp").href = `https://wa.me/${settings.whatsapp}?text=Estoy interesado en ${encodeURIComponent(prod.title)}`;
+  document.getElementById("btnWhatsapp").href = `https://wa.me/${settings.whatsapp}?text=Hola Bastardo, estoy interesado en ${encodeURIComponent(prod.title)}`;
 }
 
 document.getElementById("closeModal").addEventListener("click", () => {
