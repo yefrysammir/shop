@@ -4,9 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
   <meta name="theme-color" content="#ffffff" />
-  <title>Mi Tienda</title>
+  <title>SYA Store</title>
   <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300" rel="stylesheet" />
   <link rel="manifest" href="manifest.json" />
 </head>
@@ -15,52 +15,64 @@
     <button id="menuToggle" class="icon-btn">
       <span class="material-symbols-outlined">menu</span>
     </button>
-    <h1 class="app-title">Mi Tienda</h1>
+    <h1 class="app-title">S<span class="material-symbols-outlined">cruelty_free</span>A</h1>
     <input type="text" id="searchInput" placeholder="Buscar productos..." />
+    <!-- (orden moved down — removed from header) -->
   </header>
 
+  <!-- Overlay para blur -->
+  <div id="overlay" class="overlay"></div>
+
   <aside id="sideMenu" class="side-menu">
+    <button id="closeMenu" class="icon-btn close-btn">
+      <span class="material-symbols-outlined">close</span>
+    </button>
     <nav>
       <ul>
         <li data-filter="all">Inicio</li>
         <li data-filter="promo">Promociones</li>
-        <li data-filter="C">Camisetas</li>
-        <li data-filter="Z">Zapatillas</li>
-        <li data-filter="P">Pantalones</li>
-        <li data-filter="S">Sudaderas</li>
-        <li data-filter="A">Accesorios</li>
+        <li class="submenu">
+          <button id="toggleCategories" class="submenu-toggle">Categorías</button>
+          <ul id="categoryList" class="category-list" aria-hidden="true"></ul>
+        </li>
       </ul>
     </nav>
-    <div class="sort-section">
-      <label for="sortSelect">Ordenar por:</label>
-      <select id="sortSelect">
-        <option value="none">Por defecto</option>
-        <option value="asc">Precio: menor a mayor</option>
-        <option value="desc">Precio: mayor a menor</option>
+  </aside>
+
+  <!-- New sort bar (own space, aligned right) -->
+  <div class="sort-bar">
+    <div class="sort-wrapper">
+      <label for="sortSelect" class="sort-label">Ordenar por</label>
+      <select id="sortSelect" class="styled-select">
+        <option value="default" selected>Por defecto</option>
+        <option value="asc">Precio: menor → mayor</option>
+        <option value="desc">Precio: mayor → menor</option>
       </select>
     </div>
-  </aside>
+  </div>
 
   <main id="productGrid" class="grid"></main>
   <p id="noResults" class="no-results">No se encontraron productos</p>
 
-  <div id="productModal" class="modal">
+  <div id="productModal" class="modal" aria-hidden="true">
+    <button id="closeModal" class="icon-btn close-btn modal-close">
+      <span class="material-symbols-outlined">close</span>
+    </button>
     <div class="modal-content">
-      <button id="closeModal" class="icon-btn close-btn">
-        <span class="material-symbols-outlined">close</span>
-      </button>
       <img id="modalImage" alt="Producto" />
-      <h2 id="modalTitle"></h2>
-      <p id="modalDescription"></p>
-      <div id="modalPrice"></div>
-      <div id="modalSizes" class="sizes"></div>
-      <div class="actions">
-        <a id="btnInstagram" target="_blank" class="btn insta-btn">
-          <span class="material-symbols-outlined">photo_camera</span> Instagram
-        </a>
-        <a id="btnWhatsapp" target="_blank" class="btn whatsapp-btn">
-          <span class="material-symbols-outlined">chat</span> WhatsApp
-        </a>
+      <div class="modal-info">
+        <h2 id="modalTitle"></h2>
+        <p id="modalDescription"></p>
+        <div id="modalPrice"></div>
+        <div id="modalSizes" class="sizes"></div>
+        <div class="actions">
+          <a id="btnInstagram" target="_blank" class="btn insta-btn">
+            <span class="material-symbols-outlined">photo_camera</span> Instagram
+          </a>
+          <a id="btnWhatsapp" target="_blank" class="btn whatsapp-btn">
+            <span class="material-symbols-outlined">chat</span> WhatsApp
+          </a>
+        </div>
       </div>
     </div>
   </div>
