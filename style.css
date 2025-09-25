@@ -2,13 +2,19 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Roboto', sans-serif;
+	font-family: 'Inter', -apple-system, sans-serif;
+  -webkit-font-smoothing:antialiased;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
   background: #fafafa;
   color: #111;
   overflow-x: hidden;
+}
+
+body.no-scroll {
+  overflow: hidden;
 }
 
 .app-bar {
@@ -20,12 +26,16 @@ body {
   position: sticky;
   top: 0;
   z-index: 1000;
+  gap: 0.5rem;
 }
 
 .app-title {
   flex: 1;
+ display: flex;
+  align-items: center;
+justify-content: center;
   text-align: center;
-  font-weight: 500;
+  font-weight: 400;
   font-size: 1.2rem;
 }
 
@@ -35,18 +45,97 @@ body {
   cursor: pointer;
   color: #111;
   font-size: 1.5rem;
+ display: flex;
+  align-items: center;
+justify-content: center;
 }
 
+/* Search input (unchanged) */
 #searchInput {
   border: none;
   background: #f0f0f0;
   border-radius: 20px;
   padding: 0.4rem 0.8rem;
-  margin-left: 1rem;
   font-size: 0.9rem;
   flex: 1;
 }
 
+/* ====== SORT BAR (new area) ====== */
+.sort-bar {
+  max-width: 1200px;
+  margin: 12px auto;
+  padding: 0 16px;
+  display: flex;
+  justify-content: flex-end; /* align right */
+  align-items: center;
+  gap: 12px;
+}
+
+.sort-wrapper {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  background:#fff;
+  padding:6px 10px;
+  border-radius:10px;
+  box-shadow: 0 6px 18px rgba(16,24,40,0.04);
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+.sort-label {
+  font-size:0.9rem;
+  color:#555;
+}
+
+/* Quitar estilos nativos del select */
+#sortSelect {
+  appearance: none; /* Chrome/Safari */
+  -moz-appearance: none; /* Firefox */
+  -webkit-appearance: none; /* iOS/Android */
+  
+  background: #fff url("data:image/svg+xml;utf8,<svg fill='black' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>") no-repeat right 12px center;
+  background-size: 16px;
+  
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 10px 40px 10px 12px; /* espacio a la derecha para la flecha */
+  font-size: 15px;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+  outline: none;
+  transition: border 0.2s ease-in-out;
+}
+
+#sortSelect:focus {
+  border-color: #d32f2f; /* color destacado */
+}
+
+#sortSelect option {
+  font-size: 15px;
+  color: #333;
+}
+/* Styled select (not default look) */
+.styled-select {
+  -webkit-appearance: none;
+  appearance: none;
+  border: none;
+  background: transparent;
+  padding: 6px 10px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+/* add subtle arrow using background image (CSS only) */
+.styled-select {
+  background-image: linear-gradient(45deg, transparent 50%, #666 50%), linear-gradient(135deg, #666 50%, transparent 50%);
+  background-position: calc(100% - 18px) calc(50% - 5px), calc(100% - 13px) calc(50% - 5px);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 28px;
+}
+
+/* ====== SIDE MENU ====== */
 .side-menu {
   position: fixed;
   top: 0;
@@ -58,6 +147,7 @@ body {
   padding: 1rem;
   transition: left 0.3s ease;
   z-index: 1200;
+  overflow-y: auto;
 }
 
 .side-menu.active {
@@ -72,22 +162,59 @@ body {
   padding: 0.8rem 0;
   cursor: pointer;
   border-bottom: 1px solid rgba(255,255,255,0.1);
+transition: all 0.2s ease-in-out;
 }
 
 .side-menu li:hover {
   color: #4caf50;
 }
 
-.sort-section {
-  margin-top: 1rem;
+/* Categories list is hidden by default */
+.category-list {
+  display: none;
+  margin-top: 0.5rem;
+  padding-left: 0.5rem;
 }
 
-.sort-section select {
-  width: 100%;
-  padding: 0.4rem;
-  border-radius: 5px;
+/* open state */
+.submenu.open .category-list {
+  display: block;
 }
 
+/* overlay blur */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.3);
+  backdrop-filter: blur(4px);
+  display: none;
+  z-index: 1100;
+}
+
+.overlay.active {
+  display: block;
+}
+/* Estilos para el menú de categorías */
+#categoryList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+#categoryList li {
+  color: #fff;
+  padding: 0.8rem 0;
+	padding-left: 30px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  transition: all 0.2s ease-in-out;
+}
+
+#categoryList li:hover {
+  color: #4caf50; /* verde elegante al pasar */
+  padding-left: ; /* leve desplazamiento */
+}
+/* Grid and cards (unchanged) */
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -128,6 +255,7 @@ body {
   text-decoration: line-through;
   color: #888;
   margin-right: 0.4rem;
+  font-size: 0.9rem;
 }
 
 .badge {
@@ -161,25 +289,69 @@ body {
 }
 
 .modal-content {
-  padding: 0rem;
+  padding: 0;
 }
 
 .modal img {
   width: 100%;
   height: auto;
-  border-radius: 8px;
+  display: block;
+}
+
+/* modal info */
+.modal-info {
+  padding: 1rem;
+}
+
+/* old price muted in modal (explicit) */
+.modal-info .old-price {
+  color: #9a9aa3; /* muted grey */
+  text-decoration: line-through;
+  margin-right: 0.6rem;
+  font-size: 1rem;
+}
+
+/* new price highlighted in modal */
+.modal-info .new-price {
+  color: #e53935; /* same as badge / discount color */
+  font-weight: 800;
+  font-size: 1.15rem;
+}
+
+/* percent label next to modal price */
+.modal-info .modal-discount {
+  display:inline-block;
+  margin-left:0.6rem;
+  background: rgba(229,57,53,0.12);
+  color: #e53935;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight:700;
+  font-size:0.9rem;
 }
 
 .close-btn {
   position: absolute;
   top: 12px;
   right: 12px;
-  color: #111;
-  font-size: 1.8rem;
+  color: #fff;
+  font-size: 2rem;
+background: rgba(0,0,0,.1);
+width: 40px;
+height: 40px;
+border-radius: 50px;
+text-align: center;
+display: flex;
+justify-content: center;
+align-items: center;
+}
+
+.modal-close {
+  z-index: 2100;
 }
 
 #modalTitle {
-  margin: 1rem 0 0.4rem;
+  margin: 0.5rem 0;
   font-size: 1.4rem;
   font-weight: 500;
 }
@@ -207,7 +379,7 @@ body {
   padding: 0.4rem 0.8rem;
   background: #f0f0f0;
   border-radius: 20px;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
 }
 
 .actions {
@@ -236,4 +408,37 @@ body {
 
 .whatsapp-btn {
   background: #25D366;
+}
+/* Botón Categorías en el menú */
+#toggleCategories {
+  display: flex;
+  justify-content: space-between; /* texto a la izquierda + ícono a la derecha */
+  align-items: center;
+  width: 100%;
+  padding: 0;
+  background: none; /* quitar color por defecto */
+  border: none;     /* quitar borde */
+  outline: none;    /* quitar contorno azul */
+  font-size: 1rem;
+  font-weight: auto;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+#toggleCategories:hover {
+  background:;
+  color: #d32f2f; /* coherente con hover de categorías */
+}
+
+/* Ícono desplegable (flecha) */
+#toggleCategories::after {
+  content: "▼"; /* puedes usar un SVG o un simple triángulo */
+  font-size: 12px;
+  transition: transform 0.3s ease;
+}
+
+/* Cuando está abierto (submenu activo) */
+.submenu.open #toggleCategories::after {
+  transform: rotate(-180deg); /* flecha hacia arriba */
 }
