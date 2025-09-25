@@ -1,7 +1,7 @@
 [
-  { "sku":"C001", "percentage":20, "expires":"2025-12-31" },
-  { "sku":"Z003", "percentage":15, "expires":"2025-10-30" },
-  { "sku":"A001", "percentage":10, "expires":"2025-11-15" },
-  { "sku":"P002", "percentage":25, "expires":"2025-12-01" },
-  { "sku":"S002", "percentage":30, "expires":"2025-12-15" }
+  { "sku": "C001", "percentage": 20, "expires": "2025-12-31" },
+  { "sku": "Z003", "percentage": 15, "expires": "2025-10-30" },
+  { "sku": "A001", "percentage": 10, "expires": "2025-11-15" },
+  { "sku": "P002", "percentage": 25, "expires": "2025-12-01" },
+  { "sku": "S002", "percentage": 30, "expires": "2025-12-15" }
 ]
