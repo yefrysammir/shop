@@ -146,7 +146,7 @@ justify-content: center;
   height: 100%;
   background: #111;
   color: #fff;
-  padding: 1rem;
+  padding: 3rem 1rem;
   transition: left 0.3s ease;
   z-index: 1200;
   overflow-y: auto;
