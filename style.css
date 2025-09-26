@@ -65,10 +65,11 @@ justify-content: center;
 /* ====== SORT BAR (new area) ====== */
 .sort-bar {
   max-width: 1200px;
-  margin: auto;
-  padding: 0 15px;
+  width: 100%;
+  margin: 12px auto;
+  padding: 0 16px;
   display: flex;
-  justify-content: flex-end; /* align right */
+  justify-content: center; /* align right */
   align-items: center;
   gap: 12px;
 }
