@@ -6,7 +6,13 @@
   -webkit-font-smoothing:antialiased;
   -webkit-tap-highlight-color: transparent;
 }
-
+#pbs {
+  margin: 0 auto;
+  padding: 10px;
+  color: #ddd;
+  font-size: 12px;
+  text-align: center;
+  }
 body {
   background: #fafafa;
   color: #111;
