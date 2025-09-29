@@ -458,3 +458,29 @@ align-items: center;
 .submenu.open #toggleCategories::after {
   transform: rotate(-180deg); /* flecha hacia arriba */
 }
+/* Pull-to-refresh floating button */
+#pullRefresh {
+  transition: top 200ms cubic-bezier(.2,.9,.2,1), transform 200ms ease;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+/* Card soldout visual */
+.card.soldout {
+  opacity: 0.75;
+  filter: grayscale(.1);
+  pointer-events: auto; /* still clickable if you want to open modal explaining agotado */
+}
+
+/* price sold out style inside modal and cards */
+.price.sold-out, .sold-out {
+  font-weight: 800;
+  color: #9a9a9a;
+}
+
+/* disabled buttons in modal */
+.btn.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+  filter: grayscale(0.2);
+}
