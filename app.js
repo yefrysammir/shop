@@ -15,6 +15,14 @@ const sortSelect = document.getElementById("sortSelect");
 const categoryList = document.getElementById("categoryList");
 const toggleCategoriesBtn = document.getElementById("toggleCategories");
 
+// Pull-to-refresh variables
+let isPWA = false;
+let pullEl = null;
+let startY = 0;
+let isPulling = false;
+let maxPull = 110;
+let triggerPull = 60;
+
 async function loadData() {
   const [itemsRes, discountsRes, settingsRes] = await Promise.all([
     fetch("items.json"),
@@ -33,6 +41,7 @@ async function loadData() {
   currentList = [...products];
 }
 
+// Aplicar descuentos (no toca settings en items)
 function applyDiscounts() {
   const today = new Date();
   products = products.map(prod => {
@@ -98,18 +107,38 @@ function renderProducts(list) {
   list.forEach(prod => {
     const card = document.createElement("div");
     card.className = "card";
+
+    // decide badges
+    const badges = [];
+    // lowStock: manual flag OR heuristic (stock <= 3 and >0)
+    const isLow = !!prod.lowStock || (typeof prod.stock === "number" && prod.stock > 0 && prod.stock <= 3);
+    if (isLow && !prod.agotado) badges.push('<div class="badge">Últimas unidades</div>');
+    if (prod.discount) badges.push(`<div class="badge">-${prod.discount}%</div>`);
+    if (prod.agotado) badges.push('<div class="badge" style="background:#777">AGOTADO</div>');
+
+    // Price / sold out
+    const priceHtml = prod.agotado
+      ? `<p class="price sold-out">AGOTADO</p>`
+      : `<p class="price">${prod.oldPrice ? `<span class="old-price">S/${prod.oldPrice}</span>` : ""} S/${prod.price}</p>`;
+
     card.innerHTML = `
-      ${prod.discount ? `<div class="badge">-${prod.discount}%</div>` : ""}
+      ${badges.join("")}
       <img src="${prod.image}" alt="${prod.title}" />
       <div class="card-content">
         <h3>${prod.title}</h3>
-        <p class="price">
-          ${prod.oldPrice ? `<span class="old-price">S/${prod.oldPrice}</span>` : ""}
-          S/${prod.price}
-        </p>
+        ${priceHtml}
       </div>
     `;
-    card.addEventListener("click", () => openModal(prod));
+
+    // If sold out, add a visual muted class
+    if (prod.agotado) {
+      card.classList.add("soldout");
+      // optionally prevent opening modal on click (but still allow exploring alternatives)
+      card.addEventListener("click", () => openModal(prod));
+    } else {
+      card.addEventListener("click", () => openModal(prod));
+    }
+
     productGrid.appendChild(card);
   });
 }
@@ -131,7 +160,9 @@ function openModal(prod) {
   document.getElementById("modalDescription").textContent = prod.description;
 
   const priceEl = document.getElementById("modalPrice");
-  if (prod.oldPrice) {
+  if (prod.agotado) {
+    priceEl.innerHTML = `<span class="sold-out">AGOTADO</span>`;
+  } else if (prod.oldPrice) {
     priceEl.innerHTML = `<span class="old-price">S/${prod.oldPrice}</span><span class="new-price">S/${prod.price}</span>${prod.discount ? `<span class="modal-discount">-${prod.discount}%</span>` : ""}`;
   } else {
     priceEl.innerHTML = `<span class="new-price">S/${prod.price}</span>`;
@@ -148,8 +179,43 @@ function openModal(prod) {
     });
   }
 
-  document.getElementById("btnInstagram").href = settings.instagram;
-  document.getElementById("btnWhatsapp").href = `https://wa.me/${settings.whatsapp}?text=Hola Bastardo, estoy interesado en ${encodeURIComponent(prod.title)}`;
+  // Buttons (use settings.json for links)
+  const instaBtn = document.getElementById("btnInstagram");
+  const waBtn = document.getElementById("btnWhatsapp");
+
+  if (prod.agotado) {
+    // disable links & show message
+    instaBtn.removeAttribute("href");
+    instaBtn.classList.add("disabled");
+    instaBtn.setAttribute("aria-disabled", "true");
+
+    waBtn.removeAttribute("href");
+    waBtn.classList.add("disabled");
+    waBtn.setAttribute("aria-disabled", "true");
+
+    // show a user-friendly message in modal
+    let already = document.getElementById("soldOutMessage");
+    if (!already) {
+      const m = document.createElement("p");
+      m.id = "soldOutMessage";
+      m.style.marginTop = "1rem";
+      m.style.color = "#666";
+      m.textContent = "Producto agotado, puedes ver otras opciones, ya pronto habrá re-stock.";
+      const modalInfo = modal.querySelector(".modal-info");
+      modalInfo.appendChild(m);
+    } else {
+      already.style.display = "block";
+    }
+  } else {
+    instaBtn.classList.remove("disabled");
+    instaBtn.setAttribute("href", settings.instagram || "#");
+
+    waBtn.classList.remove("disabled");
+    waBtn.setAttribute("href", `https://wa.me/${settings.whatsapp}?text=Estoy interesado en ${encodeURIComponent(prod.title)}`);
+
+    const already = document.getElementById("soldOutMessage");
+    if (already) already.style.display = "none";
+  }
 }
 
 document.getElementById("closeModal").addEventListener("click", () => {
@@ -236,5 +302,102 @@ sortSelect.addEventListener("change", e => {
   }
   renderProducts(sorted);
 });
+
+// ---- PULL TO REFRESH (only for PWA) ----
+function detectPWA() {
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  // also check if installed (some browsers expose window.matchMedia)
+  return isStandalone;
+}
+
+function createPullElement() {
+  pullEl = document.createElement("div");
+  pullEl.id = "pullRefresh";
+  pullEl.innerHTML = `<span class="material-symbols-outlined">refresh</span>`;
+  pullEl.style.position = "fixed";
+  pullEl.style.top = "-60px";
+  pullEl.style.left = "50%";
+  pullEl.style.transform = "translateX(-50%)";
+  pullEl.style.zIndex = "3000";
+  pullEl.style.height = "56px";
+  pullEl.style.width = "56px";
+  pullEl.style.display = "flex";
+  pullEl.style.alignItems = "center";
+  pullEl.style.justifyContent = "center";
+  pullEl.style.background = "#fff";
+  pullEl.style.borderRadius = "999px";
+  pullEl.style.boxShadow = "0 6px 18px rgba(16,24,40,0.08)";
+  pullEl.style.transition = "top 200ms cubic-bezier(.2,.9,.2,1), transform 200ms ease";
+  pullEl.style.fontSize = "28px";
+  pullEl.style.color = "#111";
+  document.body.appendChild(pullEl);
+}
+
+function bindPullHandlers() {
+  if (!('ontouchstart' in window)) return; // only touch devices
+
+  window.addEventListener('touchstart', (e) => {
+    if (window.scrollY !== 0) return;
+    startY = e.touches[0].clientY;
+    isPulling = true;
+  }, {passive: true});
+
+  window.addEventListener('touchmove', (e) => {
+    if (!isPulling) return;
+    const currentY = e.touches[0].clientY;
+    let delta = currentY - startY;
+    if (delta <= 0) return; // only downward pulls
+    if (!pullEl) createPullElement();
+
+    // Map delta to a max value for UX
+    const capped = Math.min(delta, maxPull);
+    pullEl.style.top = `${-60 + capped}px`;
+    pullEl.style.transform = `translateX(-50%) rotate(${capped * 2}deg)`;
+  }, {passive: true});
+
+  window.addEventListener('touchend', async (e) => {
+    if (!isPulling) return;
+    isPulling = false;
+    if (!pullEl) return;
+    // compute final delta height from top of element
+    const topVal = parseInt(pullEl.style.top || "-60", 10);
+    const pulled = topVal + 60; // 0..maxPull
+
+    if (pulled >= triggerPull) {
+      // trigger refresh
+      pullEl.style.top = `10px`;
+      pullEl.style.transform = `translateX(-50%) rotate(360deg)`;
+      // small animation then reload
+      try {
+        await loadData();
+      } catch (err) {
+        console.error("Error al recargar datos:", err);
+      } finally {
+        setTimeout(() => {
+          if (pullEl) {
+            pullEl.style.top = "-60px";
+            pullEl.style.transform = `translateX(-50%)`;
+          }
+        }, 600);
+      }
+    } else {
+      // revert
+      pullEl.style.top = "-60px";
+      pullEl.style.transform = `translateX(-50%)`;
+    }
+  }, {passive: true});
+}
+
+function initPullToRefreshIfPWA() {
+  isPWA = detectPWA();
+  if (!isPWA) return; // do nothing on normal browser
+  createPullElement();
+  bindPullHandlers();
+}
+
+// run once at start
+initPullToRefreshIfPWA();
+
+// ---- end pull to refresh ----
 
 loadData();
