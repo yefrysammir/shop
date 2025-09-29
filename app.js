@@ -41,7 +41,6 @@ async function loadData() {
   currentList = [...products];
 }
 
-// Aplicar descuentos (no toca settings en items)
 function applyDiscounts() {
   const today = new Date();
   products = products.map(prod => {
@@ -108,21 +107,28 @@ function renderProducts(list) {
     const card = document.createElement("div");
     card.className = "card";
 
-    // decide badges
+    // decide badges using ONLY stock now:
+    // stock: 0 = agotado, 1 = últimas unidades, 2+ = normal
     const badges = [];
-    // lowStock: manual flag OR heuristic (stock <= 3 and >0)
-    const isLow = !!prod.lowStock || (typeof prod.stock === "number" && prod.stock > 0 && prod.stock <= 3);
-    if (isLow && !prod.agotado) badges.push('<div class="badge">Últimas unidades</div>');
+    const isLow = (typeof prod.stock === "number" && prod.stock === 1);
+    const isSoldOut = (typeof prod.stock === "number" && prod.stock === 0);
+
+    // discount badge (if exists)
     if (prod.discount) badges.push(`<div class="badge">-${prod.discount}%</div>`);
-    if (prod.agotado) badges.push('<div class="badge" style="background:#777">AGOTADO</div>');
+
+    // low-stock badge (only when stock === 1)
+    if (isLow && !isSoldOut) badges.push(`<div class="badge lowstock">Últimas unidades</div>`);
+
+    // sold out badge (if stock === 0)
+    if (isSoldOut) badges.push(`<div class="badge agotado">AGOTADO</div>`);
 
     // Price / sold out
-    const priceHtml = prod.agotado
+    const priceHtml = isSoldOut
       ? `<p class="price sold-out">AGOTADO</p>`
       : `<p class="price">${prod.oldPrice ? `<span class="old-price">S/${prod.oldPrice}</span>` : ""} S/${prod.price}</p>`;
 
     card.innerHTML = `
-      ${badges.join("")}
+      <div class="badges">${badges.join("")}</div>
       <img src="${prod.image}" alt="${prod.title}" />
       <div class="card-content">
         <h3>${prod.title}</h3>
@@ -131,9 +137,9 @@ function renderProducts(list) {
     `;
 
     // If sold out, add a visual muted class
-    if (prod.agotado) {
+    if (isSoldOut) {
       card.classList.add("soldout");
-      // optionally prevent opening modal on click (but still allow exploring alternatives)
+      // keep click behavior: open modal to explain agotado (same as before)
       card.addEventListener("click", () => openModal(prod));
     } else {
       card.addEventListener("click", () => openModal(prod));
@@ -160,7 +166,9 @@ function openModal(prod) {
   document.getElementById("modalDescription").textContent = prod.description;
 
   const priceEl = document.getElementById("modalPrice");
-  if (prod.agotado) {
+  const isSoldOut = (typeof prod.stock === "number" && prod.stock === 0);
+
+  if (isSoldOut) {
     priceEl.innerHTML = `<span class="sold-out">AGOTADO</span>`;
   } else if (prod.oldPrice) {
     priceEl.innerHTML = `<span class="old-price">S/${prod.oldPrice}</span><span class="new-price">S/${prod.price}</span>${prod.discount ? `<span class="modal-discount">-${prod.discount}%</span>` : ""}`;
@@ -183,7 +191,7 @@ function openModal(prod) {
   const instaBtn = document.getElementById("btnInstagram");
   const waBtn = document.getElementById("btnWhatsapp");
 
-  if (prod.agotado) {
+  if (isSoldOut) {
     // disable links & show message
     instaBtn.removeAttribute("href");
     instaBtn.classList.add("disabled");
@@ -315,7 +323,15 @@ function createPullElement() {
   pullEl.id = "pullRefresh";
   pullEl.innerHTML = `<span class="material-symbols-outlined">refresh</span>`;
   pullEl.style.position = "fixed";
-  pullEl.style.top = "-60px";
+
+  // place it respecting safe-area for iOS notch
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  if (isIOS) {
+    pullEl.style.top = `calc(env(safe-area-inset-top, 0px) + -60px)`;
+  } else {
+    pullEl.style.top = "-60px";
+  }
+
   pullEl.style.left = "50%";
   pullEl.style.transform = "translateX(-50%)";
   pullEl.style.zIndex = "3000";
@@ -351,7 +367,13 @@ function bindPullHandlers() {
 
     // Map delta to a max value for UX
     const capped = Math.min(delta, maxPull);
-    pullEl.style.top = `${-60 + capped}px`;
+    // adjust top based on safe-area if present
+    const safeTop = `calc(env(safe-area-inset-top, 0px) + ${-60 + capped}px)`;
+    if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+      pullEl.style.top = safeTop;
+    } else {
+      pullEl.style.top = `${-60 + capped}px`;
+    }
     pullEl.style.transform = `translateX(-50%) rotate(${capped * 2}deg)`;
   }, {passive: true});
 
@@ -360,29 +382,45 @@ function bindPullHandlers() {
     isPulling = false;
     if (!pullEl) return;
     // compute final delta height from top of element
-    const topVal = parseInt(pullEl.style.top || "-60", 10);
-    const pulled = topVal + 60; // 0..maxPull
+    const topValRaw = pullEl.style.top || "-60px";
+    // parse top value to compute pulled amount:
+    let pulled = 0;
+    try {
+      const topNum = parseInt(topValRaw.replace(/[^\d-]/g, ''), 10);
+      pulled = topNum + 60; // 0..maxPull (similar logic)
+    } catch (err) {
+      pulled = 0;
+    }
 
     if (pulled >= triggerPull) {
-      // trigger refresh
-      pullEl.style.top = `10px`;
+      // show visible micro-loading state
+      pullEl.classList.add('loading');
       pullEl.style.transform = `translateX(-50%) rotate(360deg)`;
-      // small animation then reload
+      // trigger refresh
       try {
-        await loadData();
+        await loadData();               // recarga real de datos
+        window.scrollTo({ top: 0, behavior: "smooth" }); // vuelve al inicio
       } catch (err) {
         console.error("Error al recargar datos:", err);
       } finally {
         setTimeout(() => {
-          if (pullEl) {
+          // hide it smoothly respecting safe-area
+          if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+            pullEl.style.top = `calc(env(safe-area-inset-top, 0px) + -60px)`;
+          } else {
             pullEl.style.top = "-60px";
-            pullEl.style.transform = `translateX(-50%)`;
           }
+          pullEl.style.transform = `translateX(-50%)`;
+          pullEl.classList.remove('loading');
         }, 600);
       }
     } else {
       // revert
-      pullEl.style.top = "-60px";
+      if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+        pullEl.style.top = `calc(env(safe-area-inset-top, 0px) + -60px)`;
+      } else {
+        pullEl.style.top = "-60px";
+      }
       pullEl.style.transform = `translateX(-50%)`;
     }
   }, {passive: true});
