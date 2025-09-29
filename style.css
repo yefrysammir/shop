@@ -225,7 +225,6 @@ transition: all 0.2s ease-in-out;
 
 #categoryList li:hover {
   color: #4caf50; /* verde elegante al pasar */
-  padding-left: ; /* leve desplazamiento */
 }
 /* Grid and cards (unchanged) */
 .grid {
@@ -271,16 +270,36 @@ transition: all 0.2s ease-in-out;
   font-size: 0.9rem;
 }
 
-.badge {
+/* NEW: badges container so multiple badges don't overlap */
+.badges {
   position: absolute;
   top: 8px;
   left: 8px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  z-index: 3;
+}
+
+/* keep the badge look but remove absolute positioning when inside .badges */
+.badge {
+  /* no absolute here; the .badges container positions them */
   background: #e53935;
   color: #fff;
   font-size: 0.7rem;
   font-weight: 500;
   padding: 0.2rem 0.5rem;
   border-radius: 6px;
+  display: inline-block;
+}
+
+.badge.lowstock {
+  background: #ff9800;
+}
+
+/* If you had inline styling for AGOTADO, it'll still apply; but prefer this class */
+.badge.agotado {
+  background: #777;
 }
 
 .no-results {
@@ -458,11 +477,32 @@ align-items: center;
 .submenu.open #toggleCategories::after {
   transform: rotate(-180deg); /* flecha hacia arriba */
 }
-/* Pull-to-refresh floating button */
+/* Pull-to-refresh floating button (keeps previous minimal style but ensures safe-area) */
 #pullRefresh {
   transition: top 200ms cubic-bezier(.2,.9,.2,1), transform 200ms ease;
   -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  top: calc(env(safe-area-inset-top, 0px) + -60px); /* default hidden above safe area */
+  z-index: 3000;
+  height: 56px;
+  width: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border-radius: 999px;
+  box-shadow: 0 6px 18px rgba(16,24,40,0.08);
+  font-size: 28px;
+  color: #111;
+}
+
+/* show state */
+#pullRefresh.show {
+  top: calc(env(safe-area-inset-top, 0px) + 10px);
+  transform: translateX(-50%) rotate(0deg);
 }
 
 /* Card soldout visual */
