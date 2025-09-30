@@ -524,7 +524,21 @@ align-items: center;
   from { transform: translateX(-50%) translateY(calc(env(safe-area-inset-top, 0px) + 10px)) rotate(0deg); }
   to   { transform: translateX(-50%) translateY(calc(env(safe-area-inset-top, 0px) + 10px)) rotate(360deg); }
 }
+.rtr-circle {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: #f0f0f0;
+  display: flex;              /* <-- Esto centra el contenido */
+  align-items: center;        /* <-- Centrado vertical */
+  justify-content: center;    /* <-- Centrado horizontal */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
 
+.rtr-circle .material-symbols-outlined {
+  font-size: 28px;            /* Ajusta el tamaño del ícono */
+  line-height: 1;             /* Evita desajustes verticales */
+}
 /* Card soldout visual */
 .card.soldout {
   opacity: 0.75;
