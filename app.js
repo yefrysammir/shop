@@ -60,10 +60,7 @@ function applyDiscounts() {
   });
 }
 
-/* --------- (el resto de tu código: renderCategories, setupCategoryToggle, renderProducts,
-   openModal, close modal handler, search, menu handlers, sort) quedan exactamente como los tenías.
-   Para no repetirlos íntegramente aquí, asumo que mantendrás tu versión original debajo de estas funciones.
-   IMPORTANTE: coloca las funciones originales tal cual. --------- */
+/* --------- (mantuve el resto de la lógica tal como la tenías) --------- */
 
 function renderCategories() {
   const categories = {};
@@ -91,16 +88,10 @@ function renderCategories() {
 }
 
 function setupCategoryToggle() {
+  // Sólo inicializamos el estado (no atamos listeners aquí).
+  // La delegación se hace en el listener de sideMenu más abajo.
   categoryList.style.display = "none";
-  if (toggleCategoriesBtn) {
-    toggleCategoriesBtn.addEventListener("click", e => {
-      e.stopPropagation();
-      const parent = toggleCategoriesBtn.closest(".submenu");
-      const isOpen = parent.classList.toggle("open");
-      categoryList.style.display = isOpen ? "block" : "none";
-      categoryList.setAttribute("aria-hidden", isOpen ? "false" : "true");
-    });
-  }
+  categoryList.setAttribute("aria-hidden", "true");
 }
 
 function renderProducts(list) {
@@ -284,7 +275,20 @@ function closeSideMenu() {
   }
 }
 
+/* ---- Aquí actualicé el handler para delegar el toggle de Categorías ---- */
 sideMenu.addEventListener("click", e => {
+  // 1) Check if user clicked the toggleCategories button (delegation)
+  const toggleBtn = e.target.closest('#toggleCategories');
+  if (toggleBtn) {
+    e.stopPropagation();
+    const parent = toggleBtn.closest('.submenu');
+    const isOpen = parent.classList.toggle('open');
+    categoryList.style.display = isOpen ? "block" : "none";
+    categoryList.setAttribute("aria-hidden", isOpen ? "false" : "true");
+    return; // handled
+  }
+
+  // 2) If clicked a category/filter item
   if (e.target.dataset.filter) {
     const filter = e.target.dataset.filter;
     let filtered = [...products];
@@ -376,7 +380,7 @@ function bindPullHandlers() {
 
     // if ready -> perform refresh
     if (pullEl.classList.contains('ready')) {
-      // show loading animation
+      // show loading animation on icon only; container remains positioned
       pullEl.classList.remove('ready');
       pullEl.classList.add('loading');
 
