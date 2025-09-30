@@ -329,7 +329,7 @@ function createPullElement() {
   if (pullEl) return;
   pullEl = document.createElement("div");
   pullEl.id = "pullRefresh";
-  pullEl.innerHTML = `<span class="material-symbols-outlined">refresh</span>`;
+  pullEl.innerHTML = `<div class="rtr-circle"><span class="material-symbols-outlined">refresh</span></div>`;
   // keep style minimal: visuals controlled by CSS classes .show / .ready / .loading
   document.body.appendChild(pullEl);
 }
