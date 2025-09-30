@@ -413,5 +413,3 @@ initPullToRefreshIfPWA();
 loadData();
 
 /* ----------------- FIN pull-to-refresh ----------------- */
-
-loadData();
