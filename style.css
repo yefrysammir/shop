@@ -479,13 +479,13 @@ align-items: center;
 }
 /* Pull-to-refresh floating button (keeps previous minimal style but ensures safe-area) */
 #pullRefresh {
-  transition: top 200ms cubic-bezier(.2,.9,.2,1), transform 200ms ease;
+  transition: transform 200ms ease;
   -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
   position: fixed;
   left: 50%;
-  transform: translateX(-50%) translateY(-100%); /* hidden above by default */
-  top: 0; /* we'll offset using transform translateY */
+  transform: translateX(-50%) translateY(-100%);
+  top: 0;
   z-index: 3000;
   height: 56px;
   width: 56px;
@@ -497,33 +497,29 @@ align-items: center;
   box-shadow: 0 6px 18px rgba(16,24,40,0.08);
   font-size: 28px;
   color: #111;
-  pointer-events: none; /* doesn't block touches */
-  padding-top: env(safe-area-inset-top, 0px); /* respect notch */
+  pointer-events: none;
+  padding-top: env(safe-area-inset-top, 0px);
 }
 
-/* Visible state (moved down into view, below safe-area top) */
 #pullRefresh.show {
   transform: translateX(-50%) translateY(calc(env(safe-area-inset-top, 0px) + 10px));
-  pointer-events: none;
 }
 
-/* Ready-to-trigger state (pulled enough) -> small scale to indicate ready */
 #pullRefresh.ready {
-  transform: translateX(-50%) translateY(calc(env(safe-area-inset-top, 0px) + 10px)) scale(1.02);
+  transform: translateX(-50%) translateY(calc(env(safe-area-inset-top, 0px) + 10px)) scale(1.05);
   box-shadow: 0 8px 22px rgba(16,24,40,0.12);
 }
 
-/* Loading/spinning state */
 #pullRefresh.loading {
   animation: spin 900ms linear infinite;
   transform-origin: 50% 50%;
 }
 
-/* spinner keyframes (aplica rotación al contenedor) */
 @keyframes spin {
   from { transform: translateX(-50%) translateY(calc(env(safe-area-inset-top, 0px) + 10px)) rotate(0deg); }
   to   { transform: translateX(-50%) translateY(calc(env(safe-area-inset-top, 0px) + 10px)) rotate(360deg); }
 }
+
 .rtr-circle {
   display: flex;
   align-items: center;
