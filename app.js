@@ -23,11 +23,13 @@ let isPulling = false;
 let maxPull = 110;
 let triggerPull = 60;
 
-async function loadData() {
+async function loadData(forceReload = false) {
+  // if forceReload is true we append a cache-busting query so SW returns network result
+  const cacheBust = forceReload ? ('?_=' + Date.now()) : '';
   const [itemsRes, discountsRes, settingsRes] = await Promise.all([
-    fetch("items.json"),
-    fetch("discounts.json"),
-    fetch("settings.json")
+    fetch("items.json" + cacheBust),
+    fetch("discounts.json" + cacheBust),
+    fetch("settings.json" + cacheBust)
   ]);
 
   products = await itemsRes.json();
@@ -41,6 +43,7 @@ async function loadData() {
   currentList = [...products];
 }
 
+// Aplicar descuentos (no toca settings en items)
 function applyDiscounts() {
   const today = new Date();
   products = products.map(prod => {
@@ -56,6 +59,11 @@ function applyDiscounts() {
     return prod;
   });
 }
+
+/* --------- (el resto de tu código: renderCategories, setupCategoryToggle, renderProducts,
+   openModal, close modal handler, search, menu handlers, sort) quedan exactamente como los tenías.
+   Para no repetirlos íntegramente aquí, asumo que mantendrás tu versión original debajo de estas funciones.
+   IMPORTANTE: coloca las funciones originales tal cual. --------- */
 
 function renderCategories() {
   const categories = {};
@@ -314,38 +322,15 @@ sortSelect.addEventListener("change", e => {
 // ---- PULL TO REFRESH (only for PWA) ----
 function detectPWA() {
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-  // also check if installed (some browsers expose window.matchMedia)
   return isStandalone;
 }
 
 function createPullElement() {
+  if (pullEl) return;
   pullEl = document.createElement("div");
   pullEl.id = "pullRefresh";
   pullEl.innerHTML = `<span class="material-symbols-outlined">refresh</span>`;
-  pullEl.style.position = "fixed";
-
-  // place it respecting safe-area for iOS notch
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  if (isIOS) {
-    pullEl.style.top = `calc(env(safe-area-inset-top, 0px) + -60px)`;
-  } else {
-    pullEl.style.top = "-60px";
-  }
-
-  pullEl.style.left = "50%";
-  pullEl.style.transform = "translateX(-50%)";
-  pullEl.style.zIndex = "3000";
-  pullEl.style.height = "56px";
-  pullEl.style.width = "56px";
-  pullEl.style.display = "flex";
-  pullEl.style.alignItems = "center";
-  pullEl.style.justifyContent = "center";
-  pullEl.style.background = "#fff";
-  pullEl.style.borderRadius = "999px";
-  pullEl.style.boxShadow = "0 6px 18px rgba(16,24,40,0.08)";
-  pullEl.style.transition = "top 200ms cubic-bezier(.2,.9,.2,1), transform 200ms ease";
-  pullEl.style.fontSize = "28px";
-  pullEl.style.color = "#111";
+  // keep style minimal: visuals controlled by CSS classes .show / .ready / .loading
   document.body.appendChild(pullEl);
 }
 
@@ -353,6 +338,7 @@ function bindPullHandlers() {
   if (!('ontouchstart' in window)) return; // only touch devices
 
   window.addEventListener('touchstart', (e) => {
+    // only begin if user is at top of page
     if (window.scrollY !== 0) return;
     startY = e.touches[0].clientY;
     isPulling = true;
@@ -365,63 +351,52 @@ function bindPullHandlers() {
     if (delta <= 0) return; // only downward pulls
     if (!pullEl) createPullElement();
 
-    // Map delta to a max value for UX
+    // capped movement for UX
     const capped = Math.min(delta, maxPull);
-    // adjust top based on safe-area if present
-    const safeTop = `calc(env(safe-area-inset-top, 0px) + ${-60 + capped}px)`;
-    if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
-      pullEl.style.top = safeTop;
+
+    // show the element when user pulls a bit
+    if (capped > 10) {
+      pullEl.classList.add('show');
     } else {
-      pullEl.style.top = `${-60 + capped}px`;
+      pullEl.classList.remove('show', 'ready');
     }
-    pullEl.style.transform = `translateX(-50%) rotate(${capped * 2}deg)`;
+
+    // when user crosses trigger threshold mark as ready
+    if (capped >= triggerPull) {
+      pullEl.classList.add('ready');
+    } else {
+      pullEl.classList.remove('ready');
+    }
   }, {passive: true});
 
   window.addEventListener('touchend', async (e) => {
     if (!isPulling) return;
     isPulling = false;
     if (!pullEl) return;
-    // compute final delta height from top of element
-    const topValRaw = pullEl.style.top || "-60px";
-    // parse top value to compute pulled amount:
-    let pulled = 0;
-    try {
-      const topNum = parseInt(topValRaw.replace(/[^\d-]/g, ''), 10);
-      pulled = topNum + 60; // 0..maxPull (similar logic)
-    } catch (err) {
-      pulled = 0;
-    }
 
-    if (pulled >= triggerPull) {
-      // show visible micro-loading state
+    // if ready -> perform refresh
+    if (pullEl.classList.contains('ready')) {
+      // show loading animation
+      pullEl.classList.remove('ready');
       pullEl.classList.add('loading');
-      pullEl.style.transform = `translateX(-50%) rotate(360deg)`;
-      // trigger refresh
+
       try {
-        await loadData();               // recarga real de datos
-        window.scrollTo({ top: 0, behavior: "smooth" }); // vuelve al inicio
+        // force reload data from network (cache-bust)
+        await loadData(true);
+        // ensure we end up at top like apps
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       } catch (err) {
         console.error("Error al recargar datos:", err);
       } finally {
+        // hide after small delay so user sees feedback
         setTimeout(() => {
-          // hide it smoothly respecting safe-area
-          if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
-            pullEl.style.top = `calc(env(safe-area-inset-top, 0px) + -60px)`;
-          } else {
-            pullEl.style.top = "-60px";
-          }
-          pullEl.style.transform = `translateX(-50%)`;
           pullEl.classList.remove('loading');
+          pullEl.classList.remove('show');
         }, 600);
       }
     } else {
-      // revert
-      if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
-        pullEl.style.top = `calc(env(safe-area-inset-top, 0px) + -60px)`;
-      } else {
-        pullEl.style.top = "-60px";
-      }
-      pullEl.style.transform = `translateX(-50%)`;
+      // not pulled enough - just hide
+      pullEl.classList.remove('show', 'ready');
     }
   }, {passive: true});
 }
@@ -433,9 +408,10 @@ function initPullToRefreshIfPWA() {
   bindPullHandlers();
 }
 
-// run once at start
+/* Run init and initial load */
 initPullToRefreshIfPWA();
+loadData();
 
-// ---- end pull to refresh ----
+/* ----------------- FIN pull-to-refresh ----------------- */
 
 loadData();
