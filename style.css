@@ -514,8 +514,9 @@ align-items: center;
 }
 
 /* Loading/spinning state */
-#pullRefresh.loading .material-symbols-outlined {
+#pullRefresh.loading {
   animation: spin 900ms linear infinite;
+  transform-origin: 50% 50%;
 }
 
 /* spinner keyframes (aplica rotación al contenedor) */
@@ -527,8 +528,6 @@ align-items: center;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 56px;   /* mismo tamaño que el contenedor */
-  width: 56px;
 }
 
 .rtr-circle .material-symbols-outlined {
