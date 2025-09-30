@@ -1,5 +1,5 @@
 [
-  { "sku":"C001","title":"Camiseta Blanca Premium","description":"Algodón pima, corte entallado.","image":"https://picsum.photos/id/1014/1200/1200","price":89,"sizes":["S","M","L","XL"], "stock": 8 },
+  { "sku":"C001","title":"Camiseta Blanca Premium","description":"Algodón pima, corte entallado.","image":"https://picsum.photos/id/1014/1200/1200","price":89,"sizes":["S","M","L","XL"], "stock": 0 },
   { "sku":"C002","title":"Camiseta Negra Minimal","description":"Diseño minimal para uso diario.","image":"https://picsum.photos/id/1015/1200/1200","price":95,"sizes":["S","M","L"], "stock": 2 },
   { "sku":"C003","title":"Camiseta Roja Runner","description":"Transpirable para entreno.","image":"https://picsum.photos/id/1016/1200/1200","price":99,"sizes":["M","L","XL"], "stock": 0 },
   { "sku":"C004","title":"Camiseta Azul Mar","description":"Casual y cómoda.","image":"https://picsum.photos/id/1018/1200/1200","price":89,"sizes":["S","M","L","XL"], "stock": 5 },
