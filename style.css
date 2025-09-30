@@ -2,7 +2,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-	font-family: 'Inter', -apple-system, sans-serif;
+  font-family: 'Inter', -apple-system, sans-serif;
   -webkit-font-smoothing:antialiased;
   -webkit-tap-highlight-color: transparent;
 }
@@ -217,7 +217,7 @@ transition: all 0.2s ease-in-out;
 #categoryList li {
   color: #fff;
   padding: 0.8rem 0;
-	padding-left: 30px;
+  padding-left: 30px;
   cursor: pointer;
   border-bottom: 1px solid rgba(255,255,255,0.1);
   transition: all 0.2s ease-in-out;
@@ -477,6 +477,8 @@ align-items: center;
 .submenu.open #toggleCategories::after {
   transform: rotate(-180deg); /* flecha hacia arriba */
 }
+
+/* === PULL-TO-REFRESH (modificado para rotar solo el icono) === */
 /* Pull-to-refresh floating button (keeps previous minimal style but ensures safe-area) */
 #pullRefresh {
   transition: transform 200ms ease;
@@ -501,38 +503,49 @@ align-items: center;
   padding-top: env(safe-area-inset-top, 0px);
 }
 
+/* visible when user pulls */
 #pullRefresh.show {
   transform: translateX(-50%) translateY(calc(env(safe-area-inset-top, 0px) + 10px));
 }
 
+/* ready state slightly upscaled */
 #pullRefresh.ready {
   transform: translateX(-50%) translateY(calc(env(safe-area-inset-top, 0px) + 10px)) scale(1.05);
   box-shadow: 0 8px 22px rgba(16,24,40,0.12);
 }
 
+/* when loading: DO NOT rotate the container - rotate only the icon */
 #pullRefresh.loading {
-  animation: spin 900ms linear infinite;
-  transform-origin: 50% 50%;
+  /* keep visible but no container transform override */
 }
 
-@keyframes spin {
-  from { transform: translateX(-50%) translateY(calc(env(safe-area-inset-top, 0px) + 10px)) rotate(0deg); }
-  to   { transform: translateX(-50%) translateY(calc(env(safe-area-inset-top, 0px) + 10px)) rotate(360deg); }
-}
-
+/* circle wrapper */
 .rtr-circle {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
+/* ensure the material symbol is centered and rotates around center */
 .rtr-circle .material-symbols-outlined {
   font-size: 28px;
   line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+  transform-origin: center center;
 }
+
+/* animate only the icon when loading */
+#pullRefresh.loading .material-symbols-outlined {
+  animation: spin 900ms linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
 /* Card soldout visual */
 .card.soldout {
   opacity: 0.75;
